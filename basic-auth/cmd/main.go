@@ -1,5 +1,5 @@
 /*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
+Package main is the Basic Authentication main package
 */
 package main
 

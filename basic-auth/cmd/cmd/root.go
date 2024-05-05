@@ -1,7 +1,10 @@
+/*
+Package cmd is the Basic Auth's subcommands package
+*/
 package cmd
 
 import (
-	"fmt"
+	"github.com/eldius/auth-pocs/basic-auth/internal/api"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -12,10 +15,17 @@ var rootCmd = &cobra.Command{
 	Use:   "basic-auth",
 	Short: "A simple Basic Authentication POC",
 	Long:  `A simple Basic Authentication POC.`,
+	PersistentPreRunE: func(_ *cobra.Command, _ []string) error {
+		// TODO init environment configuration
+		return nil
+	},
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Running...")
+		// TODO start server
+		if err := api.Start(8080); err != nil {
+			panic(err)
+		}
 	},
 }
 
