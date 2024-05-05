@@ -1,0 +1,17 @@
+package config
+
+import (
+	"github.com/spf13/viper"
+	"log/slog"
+)
+
+func GetCryptKey() string {
+	return viper.GetString("auth.key")
+}
+
+func LogLevel() slog.Level {
+	if viper.GetBool("debug") {
+		return slog.LevelDebug
+	}
+	return slog.LevelInfo
+}

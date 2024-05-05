@@ -1,3 +1,3 @@
 
 start:
-	go run ./cmd/
+	go run ./cmd/ --debug
