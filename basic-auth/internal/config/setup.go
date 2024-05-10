@@ -93,6 +93,9 @@ func setupLogs() error {
 		if slices.Contains(logKeys, a.Key) {
 			return a
 		}
+		if strings.HasPrefix(a.Key, "request.") || strings.HasPrefix(a.Key, "response.") {
+			return a
+		}
 		if a.Key == "msg" {
 			a.Key = "message"
 			return a
