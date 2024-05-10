@@ -1,21 +1,14 @@
 package api
 
 import (
-	"context"
-	"errors"
 	"fmt"
+	"github.com/eldius/auth-pocs/basic-auth/internal/auth"
+	"github.com/eldius/auth-pocs/basic-auth/internal/repository"
 	"github.com/jmoiron/sqlx"
 	"log/slog"
 	"net/http"
 	"time"
 )
-
-var (
-	AuthUserNotFoundErr = errors.New("user lookup")
-)
-
-type ctxAuthUserInfo struct {
-}
 
 type loggingResponseWriter struct {
 	http.ResponseWriter
@@ -57,6 +50,8 @@ func WithLoggingHandler() MiddlewareOptions {
 }
 
 func WithBasicAuthHandler(db *sqlx.DB) MiddlewareOptions {
+	repo := repository.NewUserRepository(db)
+	svc := auth.NewAuthService(repo)
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			u, p, ok := r.BasicAuth()
@@ -65,47 +60,16 @@ func WithBasicAuthHandler(db *sqlx.DB) MiddlewareOptions {
 				_, _ = w.Write([]byte("401 Unauthorized"))
 				return
 			}
-			rows, err := db.NamedQueryContext(r.Context(), `select * from auth_users where user = :user`, map[string]interface{}{
-				"user": u,
-			})
+			_, ctx, err := svc.AuthenticateUser(r.Context(), u, p)
 			if err != nil {
-				err = fmt.Errorf("user lookup: %w", err)
+				err = fmt.Errorf("invalid user: %w", err)
+				w.WriteHeader(http.StatusUnauthorized)
+				_, _ = w.Write([]byte("401 Unauthorized"))
 				slog.With("error", err).Error("AuthData")
-				w.WriteHeader(http.StatusUnauthorized)
-				_, _ = w.Write([]byte("401 Unauthorized"))
-				return
-			}
-			defer func() {
-				_ = rows.Close()
-			}()
-
-			if !rows.Next() {
-				slog.With("error", AuthUserNotFoundErr).Error("AuthData")
-				w.WriteHeader(http.StatusUnauthorized)
-				_, _ = w.Write([]byte("401 Unauthorized"))
 				return
 			}
 
-			usrInfoMap := map[string]interface{}{}
-
-			if err := rows.MapScan(usrInfoMap); err != nil {
-				err = fmt.Errorf("rows mapping: %w", err)
-				slog.With("error", err).Error("AuthData")
-				w.WriteHeader(http.StatusUnauthorized)
-				_, _ = w.Write([]byte("401 Unauthorized"))
-				return
-			}
-
-			if pass, ok := usrInfoMap["pass"]; !ok || pass != p {
-				slog.Error("AuthDataNotAuthorized")
-				w.WriteHeader(http.StatusUnauthorized)
-				_, _ = w.Write([]byte("401 Unauthorized"))
-				return
-			}
-
-			r.WithContext(context.WithValue(r.Context(), ctxAuthUserInfo{}, usrInfoMap["user"]))
-
-			slog.With(slog.String("user", u), slog.String("pass", p)).Debug("AuthData")
+			r.WithContext(ctx)
 			next.ServeHTTP(w, r)
 		})
 	}

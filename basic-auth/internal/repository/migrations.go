@@ -18,8 +18,6 @@ var (
 //go:embed migrations/*.sql
 var dbMigrations embed.FS
 
-var db *sqlx.DB
-
 func newPool() *sqlx.DB {
 	db, err := sqlx.Open("sqlite3", ":memory:")
 	if err != nil {
