@@ -44,7 +44,6 @@ func (s authService) AuthenticateUser(ctx context.Context, username, password st
 	usr := model.User{
 		ID:   user.ID,
 		User: user.User,
-		Pass: user.Pass,
 	}
 	ctx = context.WithValue(ctx, ctxAuthUserInfo{}, usr)
 
