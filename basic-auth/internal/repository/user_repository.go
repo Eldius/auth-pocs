@@ -14,6 +14,7 @@ var (
 
 type UserRepository interface {
 	FindByUser(ctx context.Context, user string) (*model.User, error)
+	Save(ctx context.Context, user *model.User) (*model.User, error)
 }
 
 type userRepository struct {
@@ -46,4 +47,19 @@ func (r *userRepository) FindByUser(ctx context.Context, user string) (*model.Us
 	}
 
 	return &u, nil
+}
+
+func (r *userRepository) Save(ctx context.Context, user *model.User) (*model.User, error) {
+	_, err := r.db.NamedExecContext(ctx, `insert into auth_users (user, pass) values (:user, :pass)`, user)
+	if err != nil {
+		err = fmt.Errorf("saving user info: %w", err)
+		return nil, err
+	}
+	nu, err := r.FindByUser(ctx, user.User)
+	if err != nil {
+		err = fmt.Errorf("finding newly created user info: %w", err)
+		return nil, err
+	}
+
+	return nu, nil
 }
