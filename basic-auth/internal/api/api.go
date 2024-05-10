@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"github.com/eldius/auth-pocs/basic-auth/internal/api/middleware"
 	"github.com/eldius/auth-pocs/basic-auth/internal/repository"
 	"log/slog"
 	"net/http"
@@ -17,7 +18,7 @@ func Start(port int) error {
 
 	s := http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
-		Handler: LoadMiddlewares(mux, WithLoggingHandler(), WithBasicAuthHandler(db)),
+		Handler: middleware.LoadMiddlewares(mux, middleware.WithLoggingHandler(), middleware.WithBasicAuthHandler(db)),
 	}
 
 	slog.With(slog.String("addr", s.Addr)).Info("Starting server...")

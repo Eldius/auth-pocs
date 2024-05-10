@@ -33,14 +33,14 @@ func NewAuthService(repo repository.UserRepository) Service {
 func (s authService) AuthenticateUser(ctx context.Context, username, password string) (*model.User, context.Context, error) {
 	user, err := s.repo.FindByUser(ctx, username)
 	if err != nil {
-		err = fmt.Errorf("fetching user info")
+		err = fmt.Errorf("%w: %w", NotAuthorizedErr, err)
 		slog.With("error", err).Error("AuthHandler")
 		return nil, ctx, err
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Pass), []byte(password))
 	if err != nil {
-		err = fmt.Errorf("invalid password: %w", err)
+		err = fmt.Errorf("%w: %w", NotAuthorizedErr, err)
 		slog.With("error", err).Error("AuthHandler")
 		return nil, ctx, err
 	}
@@ -70,4 +70,13 @@ func (s authService) CreateUser(ctx context.Context, user *model.User) error {
 	user.ID = savedUser.ID
 
 	return nil
+}
+
+func (s authService) UserFromContext(ctx context.Context) *model.User {
+	u, ok := ctx.Value(ctxAuthUserInfo{}).(model.User)
+	if !ok {
+		return nil
+	}
+
+	return &u
 }
