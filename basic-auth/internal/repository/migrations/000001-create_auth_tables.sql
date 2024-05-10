@@ -8,12 +8,12 @@ CREATE TABLE auth_users (
 
 insert into auth_users ("user", pass) values (
     'root'
-    , '$2a$10$Aq3G94WIe2JBQAXQG3G4V.oFd.k6Noe3MAXcp2VCTLJx/.j09LZqa'
+    , '$2a$10$Aq3G94WIe2JBQAXQG3G4V.oFd.k6Noe3MAXcp2VCTLJx/.j09LZqa' -- 12345
 );
 
 insert into auth_users ("user", pass) values (
     'user'
-    , '$2a$10$Aq3G94WIe2JBQAXQG3G4V.oFd.k6Noe3MAXcp2VCTLJx/.j09LZqa'
+    , '$2a$10$Aq3G94WIe2JBQAXQG3G4V.oFd.k6Noe3MAXcp2VCTLJx/.j09LZqa' -- 12345
 );
 
 -- +migrate Down

@@ -9,3 +9,4 @@ A group of simple projects to learn authentication in a Go backend.
 ## Reference Links ##
 
 - [How do I get Response statusCode in golang middleware? - StackOverflow](https://stackoverflow.com/a/53272925)
+- [Native Go driver for SQLite glebarez/go-sqlite - Github](https://github.com/glebarez/go-sqlite)

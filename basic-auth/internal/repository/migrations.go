@@ -4,8 +4,8 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	_ "github.com/glebarez/go-sqlite"
 	"github.com/jmoiron/sqlx"
-	_ "github.com/mattn/go-sqlite3"
 	migrate "github.com/rubenv/sql-migrate"
 	"log/slog"
 	"sync"
@@ -19,7 +19,7 @@ var (
 var dbMigrations embed.FS
 
 func newPool() *sqlx.DB {
-	db, err := sqlx.Open("sqlite3", ":memory:")
+	db, err := sqlx.Open("sqlite", ":memory:")
 	if err != nil {
 		err = fmt.Errorf("opening database connection: %w", err)
 		panic(err)

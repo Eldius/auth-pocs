@@ -16,15 +16,13 @@ func WithBasicAuthHandler(db *sqlx.DB) MiddlewareOptions {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			u, p, ok := r.BasicAuth()
 			if !ok {
-				w.WriteHeader(http.StatusUnauthorized)
-				_, _ = w.Write([]byte("401 Unauthorized"))
+				unauthorized(w)
 				return
 			}
 			_, ctx, err := svc.AuthenticateUser(r.Context(), u, p)
 			if err != nil {
+				unauthorized(w)
 				err = fmt.Errorf("invalid user: %w", err)
-				w.WriteHeader(http.StatusUnauthorized)
-				_, _ = w.Write([]byte("401 Unauthorized"))
 				slog.With("error", err).Error("AuthData")
 				return
 			}
@@ -33,4 +31,11 @@ func WithBasicAuthHandler(db *sqlx.DB) MiddlewareOptions {
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+func unauthorized(w http.ResponseWriter) {
+	w.Header().Add("WWW-Authenticate", "Basic realm=\"app access\"")
+
+	w.WriteHeader(http.StatusUnauthorized)
+	_, _ = w.Write([]byte("401 Unauthorized"))
 }
