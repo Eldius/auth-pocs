@@ -4,12 +4,9 @@ import (
 	"fmt"
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
-	"io"
 	"log"
-	"log/slog"
 	"os"
 	"path/filepath"
-	"slices"
 	"strings"
 )
 
@@ -66,7 +63,7 @@ func Setup(cfgFile string) error {
 	//	return err
 	//}
 
-	if err := setupLogs(); err != nil {
+	if err := SetupLogs(); err != nil {
 		err = fmt.Errorf("failed to configure logs: %w", err)
 		return err
 	}
@@ -83,42 +80,4 @@ func SetDefaults() {
 func MapEnvVars() {
 	viper.SetEnvPrefix("basic")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-}
-
-func setupLogs() error {
-	var h slog.Handler
-	var w io.Writer = os.Stdout
-
-	replaceAttrFunc := func(groups []string, a slog.Attr) slog.Attr {
-		if slices.Contains(logKeys, a.Key) {
-			return a
-		}
-		if strings.HasPrefix(a.Key, "request.") || strings.HasPrefix(a.Key, "response.") {
-			return a
-		}
-		if a.Key == "msg" {
-			a.Key = "message"
-			return a
-		}
-		a.Key = fmt.Sprintf("custom.%s.%s", serviceName, a.Key)
-		return a
-	}
-
-	h = slog.NewJSONHandler(w, &slog.HandlerOptions{
-		AddSource:   true,
-		Level:       LogLevel(),
-		ReplaceAttr: replaceAttrFunc,
-	})
-	logger := slog.New(h)
-	host, err := os.Hostname()
-	if err != nil {
-		panic(err)
-	}
-
-	slog.SetDefault(logger.With(
-		slog.String("service.name", serviceName),
-		slog.String("host", host),
-	))
-
-	return nil
 }

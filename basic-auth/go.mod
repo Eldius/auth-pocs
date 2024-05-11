@@ -11,6 +11,7 @@ require (
 	github.com/spf13/viper v1.18.2
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/crypto v0.17.0
+	github.com/eldius/auth-pocs/helper-library v0.0.0
 )
 
 require (

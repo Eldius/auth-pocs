@@ -1,3 +1,4 @@
 go 1.22.3
 
 use ./basic-auth
+use ./helper-library

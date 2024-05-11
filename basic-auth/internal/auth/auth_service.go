@@ -80,3 +80,12 @@ func (s authService) UserFromContext(ctx context.Context) *model.User {
 
 	return &u
 }
+
+func UserFromContext(ctx context.Context) *model.User {
+	u, ok := ctx.Value(ctxAuthUserInfo{}).(model.User)
+	if !ok {
+		return nil
+	}
+
+	return &u
+}
