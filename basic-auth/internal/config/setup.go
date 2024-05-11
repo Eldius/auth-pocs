@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"github.com/eldius/auth-pocs/helper-library/logging"
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 	"log"
@@ -55,15 +56,11 @@ func Setup(cfgFile string) error {
 
 	viper.AutomaticEnv() // read in environment variables that match
 
-	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
 		log.Println("Using config file:", viper.ConfigFileUsed())
 	}
-	//else {
-	//	return err
-	//}
 
-	if err := SetupLogs(); err != nil {
+	if err := logging.SetupLogs(serviceName, viper.GetBool("debug")); err != nil {
 		err = fmt.Errorf("failed to configure logs: %w", err)
 		return err
 	}

@@ -8,3 +8,6 @@ build-docker:
 		build \
 		-t "eldius/basic-auth:dev" \
 			.
+
+tidy:
+	go mod tidy

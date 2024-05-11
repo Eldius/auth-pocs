@@ -3,16 +3,16 @@ package auth
 import (
 	"context"
 	"github.com/eldius/auth-pocs/basic-auth/internal/model"
-	"github.com/eldius/auth-pocs/basic-auth/internal/repository"
+	"github.com/eldius/auth-pocs/basic-auth/internal/persistence"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestAuthService_CreateUser(t *testing.T) {
 	t.Run("given a valid user", func(t *testing.T) {
-		db := repository.DB()
-		repository.InitDB(db)
-		r := repository.NewUserRepository(db)
+		db := persistence.DB()
+		persistence.InitDB(db)
+		r := persistence.NewUserRepository(db)
 		s := NewAuthService(r)
 
 		t.Cleanup(func() {

@@ -1,14 +1,12 @@
-package repository
+package persistence
 
 import (
 	"embed"
 	"errors"
 	"fmt"
-	_ "github.com/glebarez/go-sqlite"
 	"github.com/jmoiron/sqlx"
 	migrate "github.com/rubenv/sql-migrate"
 	"log/slog"
-	"sync"
 )
 
 var (
@@ -17,19 +15,6 @@ var (
 
 //go:embed migrations/*.sql
 var dbMigrations embed.FS
-
-func newPool() *sqlx.DB {
-	db, err := sqlx.Open("sqlite", ":memory:")
-	if err != nil {
-		err = fmt.Errorf("opening database connection: %w", err)
-		panic(err)
-	}
-	return db
-}
-
-func DB() *sqlx.DB {
-	return sync.OnceValue(newPool)()
-}
 
 func InitDB(db *sqlx.DB) *sqlx.DB {
 	log := slog.Default()
