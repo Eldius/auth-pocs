@@ -1,3 +1,3 @@
-module github.com/eldius/auth-pocs/helper-library
+module github.com/Eldius/auth-pocs/tree/main/helper-library
 
 go 1.22.3
