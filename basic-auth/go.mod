@@ -1,4 +1,4 @@
-module github.com/eldius/auth-pocs/basic-auth
+module github.com/Eldius/auth-pocs/basic-auth
 
 go 1.22.3
 
