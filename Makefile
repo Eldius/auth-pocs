@@ -23,3 +23,30 @@ vulncheck:
 	    echo ""; \
 	    echo "---------------------"; \
 	done
+
+lint:
+	$(eval CURR_PATH := $(PWD))
+	for dir in $(MODULES); do \
+	    echo "#####################"; \
+	    echo "# starting for $$dir"; \
+	    echo "#####################"; \
+		cd "$(CURR_PATH)/$$dir"; golangci-lint run || exit 1; \
+	    echo ""; \
+	    echo "ending for $$dir"; \
+	    echo ""; \
+	    echo "---------------------"; \
+	done
+	cd $(CURR_PATH)
+
+
+test:
+	for dir in $(MODULES); do \
+	    echo "#####################"; \
+	    echo "# starting for $$dir"; \
+	    echo "#####################"; \
+		go test -C "$$dir" ./... -cover || exit 1; \
+	    echo ""; \
+	    echo "ending for $$dir"; \
+	    echo ""; \
+	    echo "---------------------"; \
+	done

@@ -5,9 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"github.com/eldius/auth-pocs/basic-auth/internal/model"
-	"github.com/eldius/auth-pocs/basic-auth/internal/persistence"
+	"github.com/eldius/auth-pocs/basic-auth/internal/persistence/repository"
 	"golang.org/x/crypto/bcrypt"
 	"log/slog"
+	"sync"
 )
 
 var (
@@ -23,10 +24,16 @@ type Service interface {
 }
 
 type authService struct {
-	repo persistence.UserRepository
+	repo repository.UserRepository
 }
 
-func NewAuthService(repo persistence.UserRepository) Service {
+func NewAuthService(repo repository.UserRepository) Service {
+	return sync.OnceValue(func() Service {
+		return newService(repo)
+	})()
+}
+
+func newService(repo repository.UserRepository) Service {
 	return &authService{repo: repo}
 }
 

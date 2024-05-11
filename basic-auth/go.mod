@@ -3,8 +3,11 @@ module github.com/eldius/auth-pocs/basic-auth
 go 1.22.3
 
 require (
+	github.com/eldius/auth-pocs/helper-library v0.0.0-20240511164210-1cf531e260bf
 	github.com/glebarez/go-sqlite v1.22.0
+	github.com/google/wire v0.6.0
 	github.com/jmoiron/sqlx v1.4.0
+	github.com/lib/pq v1.10.9
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/rubenv/sql-migrate v1.6.1
 	github.com/spf13/cobra v1.8.0

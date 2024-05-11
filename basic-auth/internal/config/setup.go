@@ -15,21 +15,6 @@ const (
 	serviceName = "basic-auth"
 )
 
-var (
-	logKeys = []string{
-		"host",
-		"service.name",
-		"level",
-		"message",
-		"time",
-		"error",
-		"source",
-		"function",
-		"file",
-		"line",
-	}
-)
-
 // Setup configures app parameters
 func Setup(cfgFile string) error {
 	if cfgFile != "" {

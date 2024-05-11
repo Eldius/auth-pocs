@@ -11,3 +11,6 @@ build-docker:
 
 tidy:
 	go mod tidy
+
+test:
+	go test ./... -cover

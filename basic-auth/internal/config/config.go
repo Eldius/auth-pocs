@@ -15,3 +15,15 @@ func LogLevel() slog.Level {
 	}
 	return slog.LevelInfo
 }
+
+func GetDBConfig() DBConfig {
+	return DBConfig{
+		Engine: "sqlite",
+		URL:    ":memory:",
+	}
+}
+
+type DBConfig struct {
+	Engine string
+	URL    string
+}

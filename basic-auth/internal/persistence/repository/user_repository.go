@@ -1,4 +1,4 @@
-package persistence
+package repository
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/eldius/auth-pocs/basic-auth/internal/model"
 	"github.com/jmoiron/sqlx"
+	"sync"
 )
 
 var (
@@ -22,7 +23,9 @@ type userRepository struct {
 }
 
 func NewUserRepository(db *sqlx.DB) UserRepository {
-	return &userRepository{db: db}
+	return sync.OnceValue(func() UserRepository {
+		return &userRepository{db: db}
+	})()
 }
 
 func (r *userRepository) FindByUser(ctx context.Context, user string) (*model.User, error) {

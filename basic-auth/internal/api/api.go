@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"github.com/eldius/auth-pocs/basic-auth/internal/api/middleware"
+	"github.com/eldius/auth-pocs/basic-auth/internal/config"
 	"github.com/eldius/auth-pocs/basic-auth/internal/persistence"
 	"log/slog"
 	"net/http"
@@ -11,7 +12,7 @@ import (
 // Start starts our server at desired port
 func Start(port int) error {
 	slog.Info("Starting app...")
-	db := persistence.InitDB(persistence.DB("sqlite", ":memory:"))
+	db := persistence.InitDB(persistence.DB(config.GetDBConfig()))
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", Home)

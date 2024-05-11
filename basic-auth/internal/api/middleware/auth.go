@@ -3,14 +3,14 @@ package middleware
 import (
 	"fmt"
 	"github.com/eldius/auth-pocs/basic-auth/internal/auth"
-	"github.com/eldius/auth-pocs/basic-auth/internal/persistence"
+	"github.com/eldius/auth-pocs/basic-auth/internal/persistence/repository"
 	"github.com/jmoiron/sqlx"
 	"log/slog"
 	"net/http"
 )
 
 func WithBasicAuthHandler(db *sqlx.DB) MiddlewareOptions {
-	repo := persistence.NewUserRepository(db)
+	repo := repository.NewUserRepository(db)
 	svc := auth.NewAuthService(repo)
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -27,8 +27,7 @@ func WithBasicAuthHandler(db *sqlx.DB) MiddlewareOptions {
 				return
 			}
 
-			r.WithContext(ctx)
-			next.ServeHTTP(w, r)
+			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }
