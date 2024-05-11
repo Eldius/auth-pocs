@@ -5,3 +5,7 @@ basic:
 
 build-docker:
 	$(MAKE) -C basic-auth build-docker
+
+tidy:
+	$(MAKE) -C helper-library tidy
+	$(MAKE) -C basic-auth tidy
