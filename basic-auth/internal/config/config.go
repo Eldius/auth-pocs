@@ -5,10 +5,6 @@ import (
 	"log/slog"
 )
 
-func GetCryptKey() string {
-	return viper.GetString("auth.key")
-}
-
 func LogLevel() slog.Level {
 	if viper.GetBool("debug") {
 		return slog.LevelDebug

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/eldius/auth-pocs/basic-auth/internal/model"
 	"github.com/eldius/auth-pocs/basic-auth/internal/persistence/repository"
-	"golang.org/x/crypto/bcrypt"
+	"github.com/eldius/auth-pocs/helper-library/auth/helper"
 	"log/slog"
 	"sync"
 )
@@ -45,8 +45,7 @@ func (s authService) AuthenticateUser(ctx context.Context, username, password st
 		return nil, ctx, err
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(user.Pass), []byte(password))
-	if err != nil {
+	if err := helper.ValidatePassword(user.Pass, password); err != nil {
 		err = fmt.Errorf("%w: %w", NotAuthorizedErr, err)
 		slog.With("error", err).Error("AuthHandler")
 		return nil, ctx, err
@@ -62,12 +61,12 @@ func (s authService) AuthenticateUser(ctx context.Context, username, password st
 }
 
 func (s authService) CreateUser(ctx context.Context, user *model.User) error {
-	bPass, err := bcrypt.GenerateFromPassword([]byte(user.Pass), bcrypt.DefaultCost)
+	pass, err := helper.HashPassword(user.Pass)
 	if err != nil {
 		err = fmt.Errorf("generating bcrypt hash: %w", err)
 		return err
 	}
-	user.Pass = string(bPass)
+	user.Pass = pass
 
 	savedUser, err := s.repo.Save(ctx, user)
 	if err != nil {
@@ -79,15 +78,7 @@ func (s authService) CreateUser(ctx context.Context, user *model.User) error {
 	return nil
 }
 
-func (s authService) UserFromContext(ctx context.Context) *model.User {
-	u, ok := ctx.Value(ctxAuthUserInfo{}).(model.User)
-	if !ok {
-		return nil
-	}
-
-	return &u
-}
-
+// UserFromContext returns user information stored in context.Context
 func UserFromContext(ctx context.Context) *model.User {
 	u, ok := ctx.Value(ctxAuthUserInfo{}).(model.User)
 	if !ok {
