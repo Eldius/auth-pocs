@@ -29,7 +29,7 @@ func NewUserRepository(db *sqlx.DB) UserRepository {
 }
 
 func (r *userRepository) FindByUser(ctx context.Context, user string) (*model.User, error) {
-	rows, err := r.db.NamedQueryContext(ctx, `select * from auth_users where user = :user`, map[string]interface{}{
+	rows, err := r.db.NamedQueryContext(ctx, `select * from auth_users where lower(user) = lower(:user)`, map[string]interface{}{
 		"user": user,
 	})
 	if err != nil {

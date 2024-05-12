@@ -50,3 +50,18 @@ test:
 	    echo ""; \
 	    echo "---------------------"; \
 	done
+
+root:
+	curl -i -u "root:12345" localhost:8080/api/endpoint
+
+user:
+	curl -i -u "user:12345" localhost:8080/api/endpoint
+
+invalid-pass:
+	curl -i -u "root:1234" localhost:8080/api/endpoint
+
+invalid-user:
+	curl -i -u "invalid:12345" localhost:8080/api/endpoint
+
+no-auth:
+	curl -i localhost:8080/api/endpoint

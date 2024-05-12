@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"github.com/eldius/auth-pocs/basic-auth/internal/auth"
 	"github.com/eldius/auth-pocs/basic-auth/internal/persistence/repository"
+	"github.com/eldius/auth-pocs/helper-library/middleware"
 	"github.com/jmoiron/sqlx"
 	"log/slog"
 	"net/http"
 )
 
-func WithBasicAuthHandler(db *sqlx.DB) MiddlewareOptions {
+func WithBasicAuthHandler(db *sqlx.DB) middleware.Options {
 	repo := repository.NewUserRepository(db)
 	svc := auth.NewAuthService(repo)
 	return func(next http.Handler) http.Handler {

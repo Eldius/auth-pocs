@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/eldius/auth-pocs/helper-library/persistence"
 	"github.com/spf13/viper"
 	"log/slog"
 )
@@ -12,14 +13,9 @@ func LogLevel() slog.Level {
 	return slog.LevelInfo
 }
 
-func GetDBConfig() DBConfig {
-	return DBConfig{
+func GetDBConfig() persistence.DBConfig {
+	return persistence.DBConfig{
 		Engine: "sqlite",
 		URL:    ":memory:",
 	}
-}
-
-type DBConfig struct {
-	Engine string
-	URL    string
 }

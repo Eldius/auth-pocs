@@ -7,7 +7,6 @@
 package persistence
 
 import (
-	"github.com/eldius/auth-pocs/basic-auth/internal/config"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -18,7 +17,7 @@ import (
 
 // Injectors from wire.go:
 
-func DB(cfg config.DBConfig) *sqlx.DB {
+func DB(cfg DBConfig) *sqlx.DB {
 	db := newPool(cfg)
 	return db
 }
