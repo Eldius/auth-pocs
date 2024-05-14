@@ -17,6 +17,7 @@ func Start(port int) error {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", Home)
+	mux.HandleFunc("GET /api/{param}/endpoint", ParameterHandler)
 
 	s := http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
@@ -32,4 +33,11 @@ func Start(port int) error {
 func Home(w http.ResponseWriter, r *http.Request) {
 	u := auth.UserFromContext(r.Context())
 	_, _ = w.Write([]byte(fmt.Sprintf("Hello, %s!", u.User)))
+}
+
+func ParameterHandler(w http.ResponseWriter, r *http.Request) {
+	value := r.PathValue("param")
+	slog.With(slog.String("param", value))
+	u := auth.UserFromContext(r.Context())
+	_, _ = w.Write([]byte(fmt.Sprintf("handling request from %#q with param %#q!", u.User, value)))
 }
