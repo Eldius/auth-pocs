@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/base64"
 	"github.com/eldius/auth-pocs/basic-auth/internal/api/middleware"
 	"github.com/eldius/auth-pocs/basic-auth/internal/persistence"
 	"github.com/eldius/auth-pocs/helper-library/logging"
@@ -38,10 +37,7 @@ func TestHome(t *testing.T) {
 		defer server.Close()
 
 		req, err := http.NewRequest(http.MethodGet, server.URL+"/", nil)
-		t.Logf("auth_header: %s", base64.StdEncoding.EncodeToString([]byte("root:12345")))
 		req.SetBasicAuth("root", "12345")
-
-		t.Logf("auth_header: %+v", req.Header)
 
 		resp, err := http.DefaultClient.Do(req)
 		assert.NoError(t, err)
