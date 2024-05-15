@@ -16,7 +16,7 @@ func TestAuthService_CreateUser(t *testing.T) {
 		db := helperpersistence.DB(config.GetDBConfig())
 		helperpersistence.InitDB(db, persistence.DBMigrationsFS, persistence.DBMigrationsRoot, persistence.DBMigrationsDialect)
 		r := repository.NewUserRepository(db)
-		s := newService(r)
+		s := NewAuthService(r)
 
 		t.Cleanup(func() {
 			_ = db.Close()
@@ -44,7 +44,7 @@ func TestAuthService_AuthenticateUser(t *testing.T) {
 		db := helperpersistence.DB(config.GetDBConfig())
 		helperpersistence.InitDB(db, persistence.DBMigrationsFS, persistence.DBMigrationsRoot, persistence.DBMigrationsDialect)
 		r := repository.NewUserRepository(db)
-		s := newService(r)
+		s := NewAuthService(r)
 
 		t.Cleanup(func() {
 			_ = db.Close()
@@ -75,6 +75,68 @@ func TestAuthService_AuthenticateUser(t *testing.T) {
 		assert.Equal(t, user.User, ctxUser.User)
 		assert.Equal(t, user.ID, ctxUser.ID)
 		assert.Empty(t, ctxUser.Pass)
+	})
+
+	t.Run("given an invalid user should return an error", func(t *testing.T) {
+		db := helperpersistence.DB(config.GetDBConfig())
+		helperpersistence.InitDB(db, persistence.DBMigrationsFS, persistence.DBMigrationsRoot, persistence.DBMigrationsDialect)
+		r := repository.NewUserRepository(db)
+		s := NewAuthService(r)
+
+		t.Cleanup(func() {
+			_ = db.Close()
+		})
+
+		ctx := context.Background()
+
+		plainPassword := "12345"
+		plainUser := "admin"
+
+		user := model.User{
+			User: plainUser,
+			Pass: plainPassword,
+		}
+
+		err := s.CreateUser(ctx, &user)
+		assert.Nil(t, err)
+		assert.Equal(t, plainUser, user.User)
+		assert.NotEqual(t, plainPassword, user.Pass)
+
+		authUser, ctx, err := s.AuthenticateUser(context.Background(), plainUser+"123", plainPassword)
+		assert.NotNil(t, err)
+		assert.ErrorIs(t, err, NotAuthorizedErr)
+		assert.Nil(t, authUser)
+	})
+
+	t.Run("given a wrong password for user user should return an error", func(t *testing.T) {
+		db := helperpersistence.DB(config.GetDBConfig())
+		helperpersistence.InitDB(db, persistence.DBMigrationsFS, persistence.DBMigrationsRoot, persistence.DBMigrationsDialect)
+		r := repository.NewUserRepository(db)
+		s := NewAuthService(r)
+
+		t.Cleanup(func() {
+			_ = db.Close()
+		})
+
+		ctx := context.Background()
+
+		plainPassword := "12345"
+		plainUser := "admin"
+
+		user := model.User{
+			User: plainUser,
+			Pass: plainPassword,
+		}
+
+		err := s.CreateUser(ctx, &user)
+		assert.Nil(t, err)
+		assert.Equal(t, plainUser, user.User)
+		assert.NotEqual(t, plainPassword, user.Pass)
+
+		authUser, ctx, err := s.AuthenticateUser(context.Background(), plainUser, plainPassword+"123")
+		assert.NotNil(t, err)
+		assert.ErrorIs(t, err, NotAuthorizedErr)
+		assert.Nil(t, authUser)
 	})
 
 }

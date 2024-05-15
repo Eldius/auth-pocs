@@ -44,7 +44,8 @@ test:
 	    echo "#####################"; \
 	    echo "# starting for $$dir"; \
 	    echo "#####################"; \
-		go test -C "$$dir" ./... -cover || exit 1; \
+		go test -C "$$dir" -coverprofile=coverage.out ./... -cover || exit 1; \
+		go tool -C "$$dir" cover -html=coverage.out || exit 1; \
 	    echo ""; \
 	    echo "ending for $$dir"; \
 	    echo ""; \
