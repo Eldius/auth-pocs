@@ -71,4 +71,4 @@ basic-docker-env-down:
 	docker compose -f docker-compose-basic.yml down
 
 basic-docker-run: basic-docker-env-down
-	docker compose -f docker-compose-basic.yml up -d
+	docker compose -f docker-compose-basic.yml up --build --remove-orphans -d
