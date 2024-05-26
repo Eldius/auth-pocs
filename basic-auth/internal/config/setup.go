@@ -56,6 +56,8 @@ func Setup(cfgFile string) error {
 // SetDefaults sets default configuration values
 func SetDefaults() {
 	viper.SetDefault("auth.key", "1234567890")
+	viper.SetDefault("db.engine", "sqlite")
+	viper.SetDefault("db.url", ":memory:")
 }
 
 // MapEnvVars sets up environment variables mapping

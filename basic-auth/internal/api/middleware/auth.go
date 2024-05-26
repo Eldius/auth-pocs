@@ -8,13 +8,41 @@ import (
 	"github.com/jmoiron/sqlx"
 	"log/slog"
 	"net/http"
+	"reflect"
+	"strings"
 )
 
-func WithBasicAuthHandler(db *sqlx.DB) middleware.Options {
+func WithBasicAuthHandler(db *sqlx.DB, publicEndpoints ...string) middleware.Options {
 	repo := repository.NewUserRepository(db)
 	svc := auth.NewAuthService(repo)
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			fmt.Printf("%+v\n", w)
+			fmt.Printf("type of w:%+v\n", reflect.TypeOf(w).String())
+			slog.With(
+				slog.String("url", r.URL.String()),
+				slog.String("publicEndpoints", strings.Join(publicEndpoints, ",")),
+			).Info("AuthDataStart")
+			fmt.Println("AuthDataStart")
+
+			for _, endpoint := range publicEndpoints {
+				if endpoint == r.URL.String() {
+					slog.With(
+						slog.String("url", r.URL.String()),
+						slog.String("publicEndpoints", strings.Join(publicEndpoints, ",")),
+					).Info("AuthDataSkip")
+					next.ServeHTTP(w, r)
+					return
+				}
+			}
+			//if slices.Contains(publicEndpoints, r.URL.Path) {
+			//	slog.With(
+			//		slog.String("url", r.URL.String()),
+			//		slog.String("publicEndpoints", strings.Join(publicEndpoints, ",")),
+			//	).Info("AuthDataSkip")
+			//	next.ServeHTTP(w, r)
+			//	return
+			//}
 			u, p, ok := r.BasicAuth()
 			if !ok {
 				unauthorized(w)

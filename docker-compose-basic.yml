@@ -1,0 +1,77 @@
+---
+services:
+  postgre-db:
+    image: "postgres:15"
+    container_name: postgre-db
+    hostname: postgres
+    environment:
+      - POSTGRES_DB=basic_auth
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgresP@ss
+    ports:
+      - "5433:5432"
+    mem_reservation: "512M"
+    mem_limit: "1024M"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -q -d moviesdb -U Password123" ]
+      timeout: 10s
+      interval: 30s
+      retries: 10
+
+  prometheus:
+    container_name: prometheus-service
+    image: prom/prometheus
+    restart: always
+    hostname: prometheus
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - ./docker/prometheus/prometheus_basic_auth.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    mem_reservation: "512M"
+    mem_limit: "1024M"
+    healthcheck:
+      test: wget -O /dev/null http://localhost:9090/-/healthy || exit 1
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 60s
+  grafana:
+    container_name: grafana-service
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    mem_reservation: "512M"
+    mem_limit: "1024M"
+    environment:
+      - "GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource,grafana-opensearch-datasource"
+    volumes:
+      - ./docker/grafana/dashboard.yaml:/etc/grafana/provisioning/dashboards/main.yaml
+      - ./docker/grafana/datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yaml
+      - ./docker/grafana/dashboards:/var/lib/grafana/dashboards
+    healthcheck:
+      test: curl --fail http://localhost:3000/api/health || exit 1
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 60s
+    depends_on:
+      prometheus:
+        condition: service_healthy
+  auth-app:
+    container_name: auth-app
+    build:
+      context: ./basic-auth
+      dockerfile: Dockerfile
+    hostname: auth.app
+    depends_on:
+      postgre-db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      - "BASIC_DB_URL=postgresql://postgres:postgresP%40ss@postgres:5432/basic_auth?sslmode=disable"
+      - "BASIC_DEBUG=true"

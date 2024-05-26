@@ -32,6 +32,8 @@ func WithLoggingHandler() Options {
 				slog.String("request.remote_address", r.RemoteAddr),
 				slog.String("request.body", ""), // TODO add request body
 				slog.String("request.headers", fmt.Sprintf("%q", r.Header)),
+				slog.String("request.method", r.Method),
+				slog.String("request.start_time", start.Format(time.RFC3339)),
 			)
 
 			l.DebugContext(r.Context(), "ReceivingRequest")
@@ -42,7 +44,7 @@ func WithLoggingHandler() Options {
 				slog.String("response.response_time", time.Since(start).String()),
 				slog.Int("response.status_code", ww.statusCode),
 				slog.String("response.body", ""), // TODO add response body
-			).DebugContext(r.Context(), "AnsweringRequest")
+			).DebugContext(r.Context(), "RespondingRequest")
 		})
 	}
 }

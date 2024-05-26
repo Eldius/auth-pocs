@@ -15,7 +15,7 @@ func LogLevel() slog.Level {
 
 func GetDBConfig() persistence.DBConfig {
 	return persistence.DBConfig{
-		Engine: "sqlite",
-		URL:    ":memory:",
+		Engine: viper.GetString("db.engine"),
+		URL:    viper.GetString("db.url"),
 	}
 }

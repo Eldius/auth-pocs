@@ -6,6 +6,7 @@ import (
 	"github.com/eldius/auth-pocs/basic-auth/internal/auth"
 	"github.com/eldius/auth-pocs/basic-auth/internal/persistence"
 	helpermiddleware "github.com/eldius/auth-pocs/helper-library/middleware"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"log/slog"
 	"net/http"
 )
@@ -16,12 +17,17 @@ func Start(port int) error {
 	db := persistence.InitDB()
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", Home)
+	mux.HandleFunc("GET /", Home)
 	mux.HandleFunc("GET /api/{param}/endpoint", ParameterHandler)
+	mux.Handle("GET /metrics", promhttp.Handler())
 
 	s := http.Server{
-		Addr:    fmt.Sprintf(":%d", port),
-		Handler: helpermiddleware.LoadMiddlewares(mux, helpermiddleware.WithLoggingHandler(), middleware.WithBasicAuthHandler(db)),
+		Addr: fmt.Sprintf(":%d", port),
+		Handler: helpermiddleware.LoadMiddlewares(
+			mux,
+			helpermiddleware.WithLoggingHandler(),
+			middleware.WithBasicAuthHandler(db, "/", "/metrics"),
+		),
 	}
 	slog.With(slog.String("addr", s.Addr)).Info("Starting server...")
 	if err := s.ListenAndServe(); err != nil {

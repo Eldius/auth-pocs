@@ -66,3 +66,9 @@ invalid-user:
 
 no-auth:
 	curl -i localhost:8080/api/endpoint
+
+basic-docker-env-down:
+	docker compose -f docker-compose-basic.yml down
+
+basic-docker-run: basic-docker-env-down
+	docker compose -f docker-compose-basic.yml up -d

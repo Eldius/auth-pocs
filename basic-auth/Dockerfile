@@ -12,10 +12,10 @@ RUN apk update && \
     apk add --no-cache git ca-certificates tzdata openssh make && \
     CGO_ENABLED=0 go build -a -v -o app -a -ldflags '-extldflags "-static"' ./cmd/main.go
 
-FROM gcr.io/distroless/static
-COPY --from=builder /etc/passwd /etc/passwd
-USER nonroot
+FROM gcr.io/distroless/static-debian12
+
 WORKDIR /app
-COPY --from=builder /app/app app
-EXPOSE 8080
-ENTRYPOINT ["/app/app"]
+
+COPY --from=builder /app/app /app/app
+
+ENTRYPOINT [ "/app/app" ]
