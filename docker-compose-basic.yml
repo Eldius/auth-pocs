@@ -73,7 +73,6 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - "BASIC_DB_URL=postgresql://postgres:postgresP%40ss@postgres:5432/basic_auth?sslmode=disable"
       - "BASIC_DEBUG=true"
     mem_reservation: "64M"
     mem_limit: "128M"
