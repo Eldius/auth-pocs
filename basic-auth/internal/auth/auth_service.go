@@ -7,6 +7,8 @@ import (
 	"github.com/eldius/auth-pocs/basic-auth/internal/model"
 	"github.com/eldius/auth-pocs/basic-auth/internal/persistence/repository"
 	"github.com/eldius/auth-pocs/helper-library/auth/helper"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"log/slog"
 	"sync"
 )
@@ -24,20 +26,29 @@ type Service interface {
 }
 
 type authService struct {
-	repo repository.UserRepository
+	repo                  repository.UserRepository
+	authenticationCounter prometheus.Counter
 }
 
 func NewAuthService(repo repository.UserRepository) Service {
 	return sync.OnceValue(func() Service {
-		return newService(repo)
+		counter := promauto.NewCounter(prometheus.CounterOpts{
+			Name: "myapp_authentication_ops_total",
+			Help: "The total number of authentication events",
+		})
+		return newService(repo, counter)
 	})()
 }
 
-func newService(repo repository.UserRepository) Service {
-	return &authService{repo: repo}
+func newService(repo repository.UserRepository, counter prometheus.Counter) Service {
+	return &authService{
+		repo:                  repo,
+		authenticationCounter: counter,
+	}
 }
 
 func (s authService) AuthenticateUser(ctx context.Context, username, password string) (*model.User, context.Context, error) {
+	s.authenticationCounter.Inc()
 	user, err := s.repo.FindByUser(ctx, username)
 	if err != nil {
 		err = fmt.Errorf("%w: %w", NotAuthorizedErr, err)
