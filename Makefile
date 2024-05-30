@@ -71,4 +71,8 @@ basic-docker-env-down:
 	docker compose -f docker-compose-basic.yml down
 
 basic-docker-run: basic-docker-env-down
-	docker compose -f docker-compose-basic.yml up --build --remove-orphans -d
+	LOG_LEVEL=debug docker compose -f docker-compose-basic.yml up --build --remove-orphans -d
+
+query-lok-logs:
+	curl -G -s  "http://localhost:3100/loki/api/v1/query" \
+      --data-urlencode 'query=sum(rate({job="varlogs"}[10m])) by (level)' | jq

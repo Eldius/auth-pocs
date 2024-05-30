@@ -1,4 +1,5 @@
 ---
+
 services:
   postgre-db:
     image: "postgres:15"
@@ -17,6 +18,7 @@ services:
       timeout: 10s
       interval: 30s
       retries: 10
+      start_period: 20s
 
   prometheus:
     container_name: prometheus-service
@@ -38,7 +40,7 @@ services:
       interval: 30s
       timeout: 30s
       retries: 5
-      start_period: 60s
+      start_period: 20s
   grafana:
     container_name: grafana-service
     image: grafana/grafana
@@ -57,18 +59,22 @@ services:
       interval: 30s
       timeout: 30s
       retries: 5
-      start_period: 60s
+      start_period: 20s
     depends_on:
       prometheus:
         condition: service_healthy
-  auth-app:
-    container_name: auth-app
+      loki:
+        condition: service_healthy
+  basic-auth:
+    container_name: basic-auth
     build:
       context: ./basic-auth
       dockerfile: Dockerfile
-    hostname: auth.app
+    hostname: basic.auth.app
     depends_on:
       postgre-db:
+        condition: service_healthy
+      loki:
         condition: service_healthy
     ports:
       - "8080:8080"
@@ -77,6 +83,28 @@ services:
     mem_reservation: "64M"
     mem_limit: "128M"
     logging:
-      driver: fluentd
+      driver: loki
       options:
-        fluentd-address: "192.168.0.59:31564"
+        loki-url: "http://localhost:3100/loki/api/v1/push"
+        loki-external-labels: container_name={{.ID}}.{{.Name}},cluster=compose
+        loki-retries: 2
+        loki-max-backoff: 800ms
+        loki-timeout: 100ms
+  loki:
+    container_name: loki
+    image: grafana/loki:latest
+    hostname: loki
+    healthcheck:
+      test: wget -O /dev/null http://localhost:3100/ready || exit 1
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 20s
+    mem_reservation: "512M"
+    mem_limit: "1024M"
+    ports:
+      - "3100:3100"
+    command:
+      -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./docker/loki/:/etc/loki
