@@ -6,4 +6,4 @@ global:
 scrape_configs:
   - job_name: "auth-app"
     static_configs:
-      - targets: ['auth.app:8080']
+      - targets: ['basic.auth.app:8080']
