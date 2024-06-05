@@ -1,5 +1,4 @@
 ---
-
 services:
   postgre-db:
     image: "postgres:15"
@@ -20,53 +19,6 @@ services:
       retries: 10
       start_period: 20s
 
-  prometheus:
-    container_name: prometheus-service
-    image: prom/prometheus
-    restart: always
-    hostname: prometheus
-    extra_hosts:
-      - host.docker.internal:host-gateway
-    command:
-      - --config.file=/etc/prometheus/prometheus.yml
-    volumes:
-      - ./docker/prometheus/prometheus_basic_auth.yml:/etc/prometheus/prometheus.yml:ro
-    ports:
-      - "9090:9090"
-    mem_reservation: "512M"
-    mem_limit: "1024M"
-    healthcheck:
-      test: wget -O /dev/null http://localhost:9090/-/healthy || exit 1
-      interval: 15s
-      timeout: 30s
-      retries: 5
-      start_period: 20s
-  grafana:
-    container_name: grafana-service
-    image: grafana/grafana
-    ports:
-      - "3000:3000"
-    mem_reservation: "512M"
-    mem_limit: "1024M"
-    environment:
-      - "GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource,grafana-opensearch-datasource"
-      - "GF_PATHS_CONFIG=/etc/grafana/conf/custom.ini"
-    volumes:
-      - ./docker/grafana/dashboard.yaml:/etc/grafana/provisioning/dashboards/main.yaml
-      - ./docker/grafana/datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yaml
-      - ./docker/grafana/dashboards:/var/lib/grafana/dashboards
-      - ./docker/grafana/custom.ini:/etc/grafana/conf/custom.ini
-    healthcheck:
-      test: curl --fail http://localhost:3000/api/health || exit 1
-      interval: 15s
-      timeout: 30s
-      retries: 5
-      start_period: 20s
-    depends_on:
-      prometheus:
-        condition: service_healthy
-      loki:
-        condition: service_healthy
   basic-auth:
     container_name: basic-auth
     build:
@@ -75,8 +27,6 @@ services:
     hostname: basic.auth.app
     depends_on:
       postgre-db:
-        condition: service_healthy
-      loki:
         condition: service_healthy
     ports:
       - "8080:8080"
@@ -87,26 +37,8 @@ services:
     logging:
       driver: loki
       options:
-        loki-url: "http://localhost:3100/loki/api/v1/push"
+        loki-url: "http://192.168.0.68:3100/loki/api/v1/push"
         loki-external-labels: container_name={{.ID}}.{{.Name}},cluster=compose
         loki-retries: 2
         loki-max-backoff: 800ms
         loki-timeout: 100ms
-  loki:
-    container_name: loki
-    image: grafana/loki:latest
-    hostname: loki
-    healthcheck:
-      test: wget -O /dev/null http://localhost:3100/ready || exit 1
-      interval: 15s
-      timeout: 30s
-      retries: 5
-      start_period: 20s
-    mem_reservation: "512M"
-    mem_limit: "1024M"
-    ports:
-      - "3100:3100"
-    command:
-      -config.file=/etc/loki/local-config.yaml
-    volumes:
-      - ./docker/loki/:/etc/loki
